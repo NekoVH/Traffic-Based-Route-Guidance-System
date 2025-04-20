@@ -6,6 +6,7 @@ def activation_function(activation_type, value):
 			return 1 / (1 + np.exp(-value))
 		case "relu":
 			return max(0, value)
+
 class Layer():
 	def __init__(self, num_nodes_in, num_nodes_out, activation_type):
 		self.num_nodes_in = num_nodes_in
@@ -37,7 +38,3 @@ class NeuralNetwork():
 		for layer in self.layers:
 			inputs = layer.calculate_outputs(inputs)
 		return inputs
-
-	def classify(self, inputs):
-		outputs = self.calculate_output(inputs)
-		return outputs

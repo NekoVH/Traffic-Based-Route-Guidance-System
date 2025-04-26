@@ -1,6 +1,6 @@
 from typing import Sequence
 
-import numpy as mp
+import numpy as np
 import pandas as pd
 
 def read_excel(filename: str, sheet_name: str, header: int | Sequence[int]) -> pd.DataFrame:
@@ -18,4 +18,4 @@ def rescaler(x_min: float, x_max: float):
         return x * (x_max - x_min) + x_min
     return _rescaler
 
-# def process_data(df: pd.DataFrame)
+def process_data(df: pd.DataFrame):

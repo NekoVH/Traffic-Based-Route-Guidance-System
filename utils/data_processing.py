@@ -19,3 +19,4 @@ def rescaler(x_min: float, x_max: float):
     return _rescaler
 
 def process_data(df: pd.DataFrame):
+

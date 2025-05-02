@@ -1,12 +1,17 @@
-from neural_network import *
+from models import *
 
-network = NeuralNetwork([2,3,2], ["relu", "sigmoid"])
+model = LSTM()
 
-inputs = [0.5, 0.6]
+inputs = torch.tensor([[0.0, 0.5, 0.25, 1.0], [1.0, 0.5, 0.25, 1.0]])
+labels = torch.tensor([0.0, 1.0])
 
-print(f"Inputs: {inputs}\n")
-for layer in network.layers:
-	print(f"Weights: {layer.weights}")
-	print(f"Biases: {layer.biases}")
-	print(f"Activation type: {layer.activation_type}\n")
-print(f"Output of the network is: {network.feed_forward(inputs)}")
+dataset = TensorDataset(inputs, labels)
+dataloader = DataLoader(dataset)
+
+trainer = L.Trainer(max_epochs=3000)
+trainer.fit(model, train_dataloaders=dataloader)
+
+
+print("\nNow let's compare the observed and predicted values...")
+print("Company A: Observed = 0, Predicted =", model(torch.tensor([0., 0.5, 0.25, 1.])).detach())
+print("Company B: Observed = 1, Predicted =", model(torch.tensor([1., 0.5, 0.25, 1.])).detach())

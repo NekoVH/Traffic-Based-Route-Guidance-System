@@ -175,3 +175,8 @@ cython_debug/
 
 # VSCode project file
 .vscode/
+
+# Lightning training logs
+lightning_logs/
+
+.models.py.kate-swp

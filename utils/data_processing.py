@@ -82,7 +82,6 @@ def process_data(df: pd.DataFrame, lags: int = 7):
     X_latlong = np.array(X_latlong)
     X_flow = np.array(X_flow)
     y = np.array(y)
-    print(X_latlong, X_flow, y)
 
     # Combine into a single X tuple for train/test split
     combined_X = list(zip(X_latlong, X_flow))

@@ -1,17 +1,25 @@
-from models import *
+from torch.utils.data import TensorDataset, DataLoader
+import torch
+import lightning as L
+from models import LSTM
+
+from utils.data_processing import read_excel, process_data
 
 model = LSTM()
 
-inputs = torch.tensor([[0.0, 0.5, 0.25, 1.0], [1.0, 0.5, 0.25, 1.0]])
-labels = torch.tensor([0.0, 1.0])
+df = read_excel(
+    filename="datasets/Scats Data October 2006.xls",
+    sheet_name="Data",
+    header=1
+)
 
-dataset = TensorDataset(inputs, labels)
-dataloader = DataLoader(dataset)
+flow_dataset = process_data(df)
+
+print(f"{flow_dataset.X_train} {flow_dataset.X_train.shape}\n")
+print(f"{flow_dataset.y_train} {flow_dataset.y_train.shape}")
+
+dataset = TensorDataset(torch.tensor(flow_dataset.X_train), torch.tensor(flow_dataset.y_train))
+dataloader = DataLoader(dataset, num_workers=15)
 
 trainer = L.Trainer(max_epochs=3000)
 trainer.fit(model, train_dataloaders=dataloader)
-
-
-print("\nNow let's compare the observed and predicted values...")
-print("Company A: Observed = 0, Predicted =", model(torch.tensor([0., 0.5, 0.25, 1.])).detach())
-print("Company B: Observed = 1, Predicted =", model(torch.tensor([1., 0.5, 0.25, 1.])).detach())

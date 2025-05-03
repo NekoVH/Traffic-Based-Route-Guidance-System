@@ -1,9 +1,18 @@
 from typing import Sequence
+from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
+
+@dataclass
+class Dataset:
+    X_train: np.ndarray
+    y_train: np.ndarray
+    X_test: np.ndarray
+    y_test: np.ndarray
+
 
 
 def read_excel(filename: str, sheet_name: str, header: int | Sequence[int]) -> pd.DataFrame:
@@ -91,4 +100,7 @@ def process_data(df: pd.DataFrame, lags: int = 7):
     X_latlong_test = np.array(X_latlong_test)
     X_flow_test = np.array(X_flow_test)
 
-    return X_latlong_train, X_flow_train, y_train, X_latlong_test, X_flow_test, y_test, flow_scaler, flow_rescaler, lat_scaler, long_scaler
+    flow_dataset = Dataset(X_flow_train, y_train, X_flow_test, y_test)
+
+    return flow_dataset
+    # return X_latlong_train, X_flow_train, y_train, X_latlong_test, X_flow_test, y_test, flow_scaler, flow_rescaler, lat_scaler, long_scaler

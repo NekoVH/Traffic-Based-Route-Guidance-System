@@ -70,11 +70,11 @@ def process_data(df: pd.DataFrame, lags: int = 7):
         offset = np.arange(-lags, 0)
 
         for idx in indices:
-            past_flow = flow[idx + offset].reshape(-1, 1)  # past lags
+            past_flow = flow[idx + offset]  # past lags
             target = flow[idx]              # current target
             X_flow.append(past_flow)
-            X_latlong.append(scat_latlong_scaled[i].reshape(-1, 1))
-            y.append([target])
+            X_latlong.append(scat_latlong_scaled[i])
+            y.append(target)
 
     # Convert lists to numpy arrays
     X_latlong = np.array(X_latlong)

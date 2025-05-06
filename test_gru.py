@@ -22,6 +22,14 @@ class SumDataset(Dataset):
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 dataset = SumDataset(num_samples=3000, seq_len=10)
 
+print("Random Numbers Dataset:")
+for i, data in enumerate(dataset):
+    x_sample, y_sample = data
+    num_set = [round(val, 4) for val in x_sample.squeeze().tolist()]
+    target = round(y_sample.item(), 4)
+    print(f"Sample {i + 1} - x: {num_set}, y: {target}")
+print("--------------------------------------------------------------------------------------------------------------------")
+
 # Partition dataset into smaller non-overlapping datasets
 # 70% train, 15% validation, 15% test
 ds_length = len(dataset)

@@ -99,5 +99,5 @@ def process_data(df: pd.DataFrame, lags: int = 7):
 
     flow_dataset = Dataset(X_flow_train, y_train, X_flow_test, y_test)
 
-    return flow_dataset
+    return flow_dataset, flow_rescaler
     # return X_latlong_train, X_flow_train, y_train, X_latlong_test, X_flow_test, y_test, flow_scaler, flow_rescaler, lat_scaler, long_scaler

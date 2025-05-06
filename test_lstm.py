@@ -7,7 +7,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 
 
-flow_dataset = process_data(read_excel("datasets/Scats Data October 2006.xls", sheet_name="Data", header=1))
+flow_dataset, flow_rescaler = process_data(read_excel("datasets/Scats Data October 2006.xls", sheet_name="Data", header=1))
 
 X_train = torch.tensor(flow_dataset.X_train, dtype=torch.float32)
 X_test = torch.tensor(flow_dataset.X_test, dtype=torch.float32)
@@ -24,7 +24,7 @@ hidden_dim = 64
 layer_dim = 1
 batch_size = 64
 dropout = 0.2
-n_epochs = 100
+n_epochs = 1000
 learning_rate = 1e-3
 weight_decay =1e-6
 
@@ -39,6 +39,6 @@ model = LSTM()
 loss_fn = nn.MSELoss(reduction="mean")
 optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
-opt = Optimization(model=model, loss_fn=loss_fn, optimizer=optimizer)
+opt = Optimization(model=model, loss_fn=loss_fn, optimizer=optimizer, rescaler=flow_rescaler)
 opt.train(train_dataloader, n_epochs=n_epochs, n_features=input_dim)
 opt.plot_losses()

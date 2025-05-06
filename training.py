@@ -4,10 +4,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from utils.data_processing import *
 class Optimization:
-    def __init__(self, model, loss_fn, optimizer):
+    def __init__(self, model, loss_fn, optimizer, rescaler):
         self.model = model
         self.loss_fn = loss_fn
         self.optimizer = optimizer
+        self.rescaler = rescaler
         self.train_losses = []
 
     def train_step(self, x, y):
@@ -15,14 +16,14 @@ class Optimization:
 
         yhat = self.model(x)
 
-        loss = self.loss_fn(y, yhat)
+        loss = self.loss_fn(y.unsqueeze(1), yhat)
 
         loss.backward()
 
         self.optimizer.step()
         self.optimizer.zero_grad()
 
-        return rescaler(loss.item())
+        return self.rescaler(loss.item())
 
     def train(self, train_loader, batch_size=64, n_epochs=50, n_features=1, device='cpu'):
         for epoch in range(1, n_epochs + 1):

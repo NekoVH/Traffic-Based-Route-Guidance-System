@@ -13,8 +13,6 @@ class Dataset:
     X_test: np.ndarray
     y_test: np.ndarray
 
-
-
 def read_excel(filename: str, sheet_name: str, header: int | Sequence[int]) -> pd.DataFrame:
     return pd.read_excel(filename, sheet_name=sheet_name, header=header)
 
@@ -87,7 +85,7 @@ def process_data(df: pd.DataFrame, lags: int = 7):
     combined_X = list(zip(X_latlong, X_flow))
 
     # Perform train-test split
-    X_train_comb, X_test_comb, y_train, y_test = train_test_split(combined_X, y, random_state=0, train_size=0.75)
+    X_train_comb, X_test_comb, y_train, y_test = train_test_split(combined_X, y, random_state=0, train_size=0.01)
 
     # Unzip the combined tuples back into separate arrays
     X_latlong_train, X_flow_train = zip(*X_train_comb)

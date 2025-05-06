@@ -3,10 +3,7 @@ import torch.nn as nn
 import numpy as np
 from torch.optim import Adam
 
-import lightning as L
-
-
-class LSTM(L.LightningModule):
+class LSTM(nn.Module):
     def __init__(self):  # Create and initialise weight and bias tensors
         super().__init__()
         mean = torch.tensor(0.0)
@@ -54,21 +51,4 @@ class LSTM(L.LightningModule):
         for i in input:
             long_memory, short_memory = self.lstm_unit(i, long_memory, short_memory)
 
-        return short_memory
-
-    def configure_optimizers(self): # Configure Adam optimizer
-        return Adam(self.parameters())
-
-    def training_step(self, batch, batch_idx): # Calculate loss and log training process
-        input_i, label_i = batch
-        output_i = self.forward(input_i[0])
-        loss = (output_i - label_i) ** 2
-
-        self.log("train_loss", loss)
-
-        if (label_i == 0):
-            self.log("out_0", output_i)
-        else:
-            self.log("out_1", output_i)
-
-        return loss
+        return short_memory.item()

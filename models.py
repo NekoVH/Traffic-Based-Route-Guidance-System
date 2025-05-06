@@ -51,4 +51,5 @@ class LSTM(nn.Module):
         for i in input:
             long_memory, short_memory = self.lstm_unit(i, long_memory, short_memory)
 
-        return short_memory.item()
+        return short_memory
+

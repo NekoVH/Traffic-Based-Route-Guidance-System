@@ -1,8 +1,10 @@
+from pathlib import Path
 import pygame
+from astar import astar
+#parse_graph and path_coordinates are currently for testing dummy data. May not be in final version
+from astar_utils import parse_graph, path_coordinates
 
-#For the future, could pass through path variables as parameters for setting up the path.
-#So from astar, it would be a list
-def gui_visualisation():
+def gui_visualisation(path):
     pygame.init()
 
     #Set up the display window
@@ -16,7 +18,7 @@ def gui_visualisation():
     #map_rect = map_image.get_rect()
 
     #Example path for initial testing
-    path = [(0, 0), (100, 0), (100, 100), (200, 100)]
+    #path = [(0, 0), (100, 0), (100, 100), (200, 100)]
     path_colour = (255, 0, 0) #Red colour for path
     path_width = 5
 
@@ -41,8 +43,16 @@ def gui_visualisation():
     #Quit
     pygame.quit()
 
+#For parsing and generating test paths with dummy data. May not be in final version.
+def dummy_testing():
+    #Parses Dummy Test data
+    graph = parse_graph("cade_testing/test_1.txt")
+    path, _ = astar(graph, graph.origin, graph.destinations)
+    coordinates = path_coordinates(path, graph)
+    return coordinates
+
 #Run the visualisation GUI
-gui_visualisation()
+gui_visualisation(dummy_testing())
 
 
 

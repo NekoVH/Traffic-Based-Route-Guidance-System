@@ -1,93 +1,47 @@
 import torch
 import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader, random_split
+from torch.utils.data import TensorDataset, DataLoader
+from utils.data_processing import read_excel, process_data
 from gru import GRU
+from training import Optimization
 
 # Reference: https://pytorch.org/tutorials/beginner/basics/optimization_tutorial.html
 
-# Synthetic dataset with sets of random nums, target = sum of random nums in set
-class SumDataset(Dataset):
-    def __init__(self, num_samples=1000, seq_len=10):
-        self.x = torch.randn(num_samples, seq_len, 1)   # Dataset
-        self.y = self.x.sum(dim=1)                      # Target
-
-    def __len__(self):
-        return len(self.x)
-    
-    def __getitem__(self, index):
-        return self.x[index], self.y[index]
-
-
 # Determine device and init dataset
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-dataset = SumDataset(num_samples=3000, seq_len=10)
+flow_dataset, flow_rescaler = process_data(read_excel(
+    filename="datasets/Scats Data October 2006.xls",
+    sheet_name="Data",
+    header=1
+))
 
-print("Random Numbers Dataset:")
-for i, data in enumerate(dataset):
-    x_sample, y_sample = data
-    num_set = [round(val, 4) for val in x_sample.squeeze().tolist()]
-    target = round(y_sample.item(), 4)
-    print(f"Sample {i + 1} - x: {num_set}, y: {target}")
-print("--------------------------------------------------------------------------------------------------------------------")
+X_train = torch.tensor(flow_dataset.X_train, dtype=torch.float32)
+y_train = torch.tensor(flow_dataset.y_train, dtype=torch.float32)
+X_test = torch.tensor(flow_dataset.X_test, dtype=torch.float32)
+y_test = torch.tensor(flow_dataset.y_test, dtype=torch.float32)
 
-# Partition dataset into smaller non-overlapping datasets
-# 70% train, 15% validation, 15% test
-ds_length = len(dataset)
-train_length = int(ds_length * 0.7)
-val_length = int(ds_length * 0.15)
-test_length = ds_length - train_length - val_length
-train_ds, val_ds, test_ds = random_split(dataset, [train_length, val_length, test_length])
+train_ds = TensorDataset(X_train, y_train)
+test_ds = TensorDataset(X_test, y_test)
 
-train_dl = DataLoader(train_ds, batch_size=32, shuffle=True)
-val_dl = DataLoader(val_ds, batch_size=32)
-test_dl = DataLoader(test_ds, batch_size=32)
+train_dl = DataLoader(train_ds, batch_size=64, drop_last=True)
+test_dl = DataLoader(test_ds, batch_size=64, drop_last=True)
+
+# Model parameters
+input_dim = 7
+output_dim = 1
+hidden_dim = 64
+layer_dim = 1
+batch_size = 64
+dropout = 0.2
+n_epochs = 1000
+learning_rate = 1e-3
+weight_decay = 1e-6
 
 # Init model, loss and optimiser
 model = GRU().to(device)
-criterion = nn.MSELoss()
-optimiser = torch.optim.Adam(model.parameters(), lr=1e-3)
+loss_func = nn.MSELoss()
+optimiser = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
-# Training loop with validation checking
-for epoch in range(1, 21):
-    # Train
-    model.train()   # Enable dropout (0.2 is set for GRU)
-    train_loss = 0.0
-    
-    for xb, yb in train_dl:
-        xb, yb = xb.to(device), yb.to(device)   # Move batch to device
-        
-        # Calculate prediction and loss
-        preds = model(xb)                       # Forward pass
-        loss = criterion(preds, yb)             # Compute MSE
-
-        # Backpropagation
-        loss.backward()                         # Backpropagate
-        optimiser.step()                        # Update weights
-        optimiser.zero_grad()                   # Clear old gradients
-        
-        # Add loss to sum
-        train_loss += loss.item()
-    
-    train_loss /= len(train_dl)                 # Calculate average loss per batch
-
-    # Validate
-    model.eval()    # Disable dropout
-    val_loss = 0.0
-    with torch.no_grad():   # Ensures no gradients computed
-        for xb, yb in val_dl:
-            xb, yb = xb.to(device), yb.to(device)
-            val_loss += criterion(model(xb), yb).item()
-    val_loss /= len(val_dl)
-
-    print(f"Epoch {epoch:02d} — train MSE: {train_loss:.4f}, val MSE: {val_loss:.4f}")
-
-# Final evaluation using the test dataset
-model.eval()
-test_loss = 0.0
-with torch.no_grad():
-    for xb, yb in test_dl:
-        xb, yb = xb.to(device), yb.to(device)
-        test_loss += criterion(model(xb), yb).item()
-test_loss /= len(test_dl)
-
-print(f"\nTest set MSE: {test_loss:.4f}")
+opt = Optimization(model=model, loss_fn=loss_func, optimizer=optimiser, rescaler=flow_rescaler, device=device)
+opt.train(train_dl, n_epochs=n_epochs, n_features=input_dim)
+opt.plot_losses()

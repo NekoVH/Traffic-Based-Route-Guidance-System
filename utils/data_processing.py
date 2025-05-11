@@ -115,7 +115,7 @@ def process_data(df: pd.DataFrame, lags: int = 7):
     combined_X = list(zip(X_latlong, X_flow))
 
     # First split: 80% train, 20% test+val
-    X_train_comb, X_testval_comb, y_train, y_testval = train_test_split(combined_X, y, test_size=0.95, random_state=42)
+    X_train_comb, X_testval_comb, y_train, y_testval = train_test_split(combined_X, y, test_size=0.99, random_state=42)
 
     # Second split: 50% train, 50% validation (10% test, 10% validation)
     X_test_comb, X_val_comb, y_test, y_val = train_test_split(X_testval_comb, y_testval, test_size=0.5, random_state=42)

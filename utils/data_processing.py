@@ -32,22 +32,22 @@ def rescaler(x_min: float, x_max: float):
     return _rescaler
 
 def process_data(df: pd.DataFrame, lags: int = 7):
-    processed_file = "datasets/processed_scats_data_october_2006.csv"
-
+    processed_file = "datasets/processed_scats_data_october_2006.parquet"
+    
     if os.path.exists(processed_file):
         # Load the processed data
-        processed_data = pd.read_csv(processed_file)
-
+        processed_data = pd.read_parquet(processed_file)
+        
         # Extract the data
         X_latlong = processed_data[['lat', 'long']].values
         X_flow = processed_data[[f'flow_{i}' for i in range(lags)]].values
         y = processed_data['target'].values
-
+        
         # Get the flow min and max for rescaling
         flow_min = processed_data['flow_min'].iloc[0]
         flow_max = processed_data['flow_max'].iloc[0]
         flow_rescaler = rescaler(flow_min, flow_max)
-
+        
     else:
         flow_columns = [f"V{str(i).zfill(2)}" for i in range(96)]  # Creates V00 to V95
         scat_grouped = df.groupby(['NB_LATITUDE', 'NB_LONGITUDE'])[flow_columns].apply(lambda x: x.values.tolist())
@@ -98,16 +98,18 @@ def process_data(df: pd.DataFrame, lags: int = 7):
         X_flow = np.array(X_flow)
         y = np.array(y)
 
-        # Save the processed data to CSV
+        # Create DataFrame with optimized data types
         processed_df = pd.DataFrame({
-            'lat': X_latlong[:, 0],
-            'long': X_latlong[:, 1],
-            **{f'flow_{i}': X_flow[:, i] for i in range(lags)},
-            'target': y,
+            'lat': X_latlong[:, 0].astype('float32'),  # Use float32 instead of float64
+            'long': X_latlong[:, 1].astype('float32'),
+            **{f'flow_{i}': X_flow[:, i].astype('float32') for i in range(lags)},
+            'target': y.astype('float32'),
             'flow_min': flow_min,
             'flow_max': flow_max
         })
-        processed_df.to_csv(processed_file, index=False)
+
+        # Save as parquet file with compression
+        processed_df.to_parquet(processed_file, compression='gzip')
 
     # Combine into a single X tuple for train/test/validation split
     combined_X = list(zip(X_latlong, X_flow))

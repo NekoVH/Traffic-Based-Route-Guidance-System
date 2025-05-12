@@ -46,3 +46,5 @@ opt = Optimization(model=model, loss_fn=loss_fn, optimizer=optimizer, rescaler=f
 opt.train(train_dataloader, validation_dataloader, n_epochs=n_epochs, n_features=input_dim)
 opt.plot_losses()
 
+opt.evaluate(test_dataloader, n_features=input_dim)
+

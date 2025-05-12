@@ -12,8 +12,8 @@ class LSTM(nn.Module):
         self.fc = nn.Linear(hidden_size, output_dim)
 
     def forward(self, X):
-        hidden_states = torch.zeros(self.num_layers, X.size(0), self.hidden_size).requires_grad_()
-        cell_states = torch.zeros(self.num_layers, X.size(0), self.hidden_size).requires_grad_()
+        hidden_states = torch.zeros(self.num_layers, X.size(0), self.hidden_size, device=X.device).requires_grad_()
+        cell_states = torch.zeros(self.num_layers, X.size(0), self.hidden_size, device=X.device).requires_grad_()
         out, (hn, cn) = self.lstm(X, (hidden_states.detach(), cell_states.detach()))
         out = out[:, -1, :]
         out = self.fc(out)

@@ -42,7 +42,7 @@ model = Transformer().to(device)
 loss_fn = nn.MSELoss(reduction="mean")
 optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
-opt = Optimization(model=model, loss_fn=loss_fn, optimizer=optimizer, rescaler=flow_rescaler)
-opt.train(train_dataloader, validation_dataloader, n_epochs=n_epochs, n_features=input_dim)
+opt = Optimization(model=model, loss_fn=loss_fn, optimizer=optimizer, rescaler=flow_rescaler, device=device)
+opt.train(train_dataloader, validation_dataloader, n_epochs=n_epochs, n_features=input_dim, file="transformer.pth")
 opt.plot_losses()
 

@@ -32,17 +32,24 @@ learning_rate = 1e-3
 weight_decay = 1e-6
 
 # Load Dataset to DataLoader
-# Transformer expects (batch, seq_len, input_dim)
 train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=False, drop_last=True)
 validation_dataloader = DataLoader(validation_data, batch_size=batch_size, shuffle=False, drop_last=True)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False, drop_last=True)
 
+# Initialize model with memory optimizations
 model = Transformer().to(device)
 
-loss_fn = nn.MSELoss(reduction="mean")
+loss_fn = torch.nn.MSELoss(reduction='mean')
 optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
-opt = Optimization(model=model, loss_fn=loss_fn, optimizer=optimizer, rescaler=flow_rescaler)
+opt = Optimization(
+    model=model,
+    optimizer=optimizer,
+    loss_fn=loss_fn,
+    rescaler=flow_rescaler,
+    device=device,
+)
+
 opt.train(train_dataloader, validation_dataloader, n_epochs=n_epochs, n_features=input_dim)
 opt.plot_losses()
 

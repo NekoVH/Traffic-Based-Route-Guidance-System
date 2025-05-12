@@ -1,4 +1,4 @@
-import datetime
+import os
 import copy
 import torch
 import numpy as np
@@ -38,7 +38,7 @@ class Optimization:
         return self.rescaler(loss.item())
 
 
-    def train(self, train_loader, batch_size=64, n_epochs=50, n_features=1):
+    def train(self, train_loader, batch_size=64, n_epochs=50, n_features=1, file=None):
         best_loss = float('inf')
         best_weights = copy.deepcopy(self.model.state_dict())
         no_improvement_count = 0
@@ -75,6 +75,14 @@ class Optimization:
         
         # Load best model weights
         self.model.load_state_dict(best_weights)
+        
+        # Save model weights to file
+        if (file):
+            save_dir = "weights"
+            os.makedirs(save_dir, exist_ok=True)
+            save_path = os.path.join(save_dir, file)
+            torch.save(self.model.state_dict(), save_path)
+            print(f"Model weights saved in {save_path}'")
 
 
     def evaluate(self, test_loader, batch_size=1, n_features=1):

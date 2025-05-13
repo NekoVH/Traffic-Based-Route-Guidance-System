@@ -1,8 +1,6 @@
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-from torch.utils.data import TensorDataset, DataLoader
 from utils.data_processing import read_excel, process_data
 from gru import GRU
 from lstm import LSTM
@@ -10,7 +8,6 @@ from transformer import Transformer
 
 from sys import argv
 import os
-from datetime import datetime, timedelta
 
 def parse_args():
     argc = len(argv)
@@ -52,7 +49,7 @@ def load_data(model, batch_size=64, device="cpu"):
 
 def load_model(model_choice, device="cpu"):
     SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-    WEIGHT_PATH = os.path.join(SCRIPT_DIR, f"weights/{model_choice}.pth")
+    WEIGHT_PATH = os.path.join(SCRIPT_DIR, f"models/{model_choice}.pth")
 
     if not os.path.exists(WEIGHT_PATH):
         exit(f"Error: weights file not found at {WEIGHT_PATH} first")

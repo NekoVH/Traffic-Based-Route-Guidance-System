@@ -48,7 +48,7 @@ class Optimization:
             loss = self.loss_fn(y.unsqueeze(1), yhat)
         return self.rescaler(loss.item())
 
-    def train(self, train_loader, val_loader, batch_size=64, n_epochs=50, n_features=1, file=None):
+    def train(self, train_loader, val_loader, batch_size=64, n_epochs=50, n_features=1, file=None):        
         best_val_loss = float('inf')
         best_weights = copy.deepcopy(self.model.state_dict())
         no_improvement_count = 0
@@ -102,7 +102,7 @@ class Optimization:
         
         # Save model weights to file
         if (file):
-            save_dir = "weights"
+            save_dir = "models"
             os.makedirs(save_dir, exist_ok=True)
             save_path = os.path.join(save_dir, file)
             torch.save(self.model.state_dict(), save_path)

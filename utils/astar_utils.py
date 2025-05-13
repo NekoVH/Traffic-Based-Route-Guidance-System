@@ -39,7 +39,7 @@ It may not be useful for the final version of the program.
 """
 
 #Takes the dummy data graph and converts to coordinates (scaled by 10x by default)
-def path_coordinates(path: list, graph: Graph, scale: int = 10):
+def path_coordinates(path: list, graph: Graph, scale: int = 1):
     return [(x * scale, y * scale) for node in path for x, y in [graph.nodes[node]]]
 
 #Parse graph information from text file (USED FOR TESTING)

@@ -36,22 +36,23 @@ def gui_visualisation(path, graph):
     #Quit
     pygame.quit()
 
+'''
 #For generating test paths with dummy data. May not be in final version.
 def dummy_path_generator():
     graph = parse_graph("cade_testing/test_1.txt")
     path, _ = astar(graph, graph.origin, graph.destinations)
     coordinates = path_coordinates(path, graph)
     return coordinates, graph
+'''
 
-#Pseudocode for actual path generator
-def path_generator():
+def path_generator(model, origin, destination):
 
     #Change the directory of generate graph as needed
     graph = generate_graph("../datasets/Scats Data October 2006.xls", "../datasets/SCATSSiteListingSpreadsheet_VicRoads.xlsx")
 
     #Change the origin/destinations as needed
-    path, _ = astar(graph, graph.origin, graph.destinations)
-    print(path)
+    if model == "astar":
+        path, _ = astar(graph, origin, destination)
 
     coordinates = path_coordinates(path, graph)
 
@@ -79,10 +80,13 @@ def render_graph(screen, graph, path):
         x, y = graph.nodes[node]    
         pygame.draw.circle(screen, (0, 0, 0), (x, y), 5)
 
-#Run the visualisation GUI
-#replace dummy parse when using actual data
-path, graph = path_generator()
-gui_visualisation(path, graph)
+def call_renderer(model, origin, destination):
+    path, graph = path_generator(model, origin, destination)
+    gui_visualisation(path, graph)
+
+#Run the visualisation GUI with testing values
+call_renderer("astar", "970", ["4335"])
+
 
 
 

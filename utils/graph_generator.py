@@ -52,7 +52,7 @@ def generate_graph(scats_data, scats_sites):
     #print_list(coordinates, "Nodes with Coordinates")
 
     scaled_coordinates = scale_coordinates(coordinates)
-    print_dict(scaled_coordinates, "Nodes with Coordinates")
+    #print_dict(scaled_coordinates, "Nodes with Coordinates")
 
     edges = generate_edges(nodes, scats_sites)
     #print_dict(edges, "Edges")
@@ -156,8 +156,5 @@ def generate_adj_list(nodes, edges):
         adj_list[site2][site1] = weight
     return adj_list
 
-            
-#NOTE: This reads the XLSX version of the SCATSSiteListingSpreadsheet, as the XLS version causes errors.
-#generate_graph("../datasets/Scats Data October 2006.xls", "../datasets/SCATSSiteListingSpreadsheet_VicRoads.xlsx")
 
     

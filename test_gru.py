@@ -5,6 +5,8 @@ from utils.data_processing import read_excel, process_data
 from gru import GRU
 from training import Optimization
 
+from hyperparams import *
+
 # Reference: https://pytorch.org/tutorials/beginner/basics/optimization_tutorial.html
 
 # Determine device and init dataset
@@ -27,17 +29,6 @@ y_test = torch.tensor(flow_dataset.y_test, dtype=torch.float32)
 train_ds = TensorDataset(X_train, y_train)
 val_ds = TensorDataset(X_val, y_val)
 test_ds = TensorDataset(X_test, y_test)
-
-# Hyperparameters
-input_dim = 7
-output_dim = 1
-hidden_dim = 64
-layer_dim = 1
-batch_size = 64
-dropout = 0.2
-n_epochs = 1000
-learning_rate = 1e-3
-weight_decay = 1e-6
 
 train_dl = DataLoader(train_ds, batch_size=batch_size, drop_last=True)
 val_dl = DataLoader(val_ds, batch_size=batch_size, shuffle=False, drop_last=True)

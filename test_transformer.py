@@ -6,6 +6,8 @@ from training import Optimization
 from transformer import Transformer
 from utils.data_processing import process_data, read_excel
 
+from hyperparams import *
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 flow_dataset, flow_rescaler = process_data(read_excel("datasets/Scats Data October 2006.xls", sheet_name="Data", header=1))
 
@@ -20,16 +22,6 @@ y_test = torch.tensor(flow_dataset.y_test, dtype=torch.float32)
 training_data = TensorDataset(X_train, y_train)
 validation_data = TensorDataset(X_val, y_val)
 test_data = TensorDataset(X_test, y_test)
-
-# Hyperparameters
-input_dim = 7
-output_dim = 1
-hidden_dim = 64
-layer_dim = 1
-batch_size = 64
-n_epochs = 1000
-learning_rate = 1e-3
-weight_decay = 1e-6
 
 # Load Dataset to DataLoader
 train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=False, drop_last=True)

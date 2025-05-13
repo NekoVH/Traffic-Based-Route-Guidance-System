@@ -1,7 +1,6 @@
-from http import cookiejar
-from pathlib import Path
 import pygame
 from astar import astar
+from graph_generator import generate_graph
 #parse_graph and path_coordinates are currently for testing dummy data. May not be in final version
 from astar_utils import parse_graph, path_coordinates
 
@@ -45,17 +44,19 @@ def dummy_path_generator():
     return coordinates, graph
 
 #Pseudocode for actual path generator
-'''
-def path_generator(origin, destination):
-    graph = parse_graph(???)
-    path, _ = astar(graph, origin, destination)
+def path_generator():
+
+    #Change the directory of generate graph as needed
+    graph = generate_graph("../datasets/Scats Data October 2006.xls", "../datasets/SCATSSiteListingSpreadsheet_VicRoads.xlsx")
+
+    #Change the origin/destinations as needed
+    path, _ = astar(graph, graph.origin, graph.destinations)
+
     return path, graph
-'''
 
 #Renders the graph
 def render_graph(screen, graph, path):
     #Renders the edges (Gray lines)
-    
     for edge in graph.edges:
         node1, node2 = edge
 
@@ -63,7 +64,7 @@ def render_graph(screen, graph, path):
         x1, y1 = graph.nodes[node1]
         x2, y2 = graph.nodes[node2]
 
-        pygame.draw.line(screen, (125, 125, 125), (x1*10, y1*10), (x2*10, y2*10), 2) #remove *10 when using actual data
+        pygame.draw.line(screen, (125, 125, 125), (x1, y1), (x2, y2), 2)
         
     #Renders the path (Red lines)
     if len(path) > 1:
@@ -73,11 +74,11 @@ def render_graph(screen, graph, path):
     #Renders the nodes (Black circles)
     for node in graph.nodes:
         x, y = graph.nodes[node]    
-        pygame.draw.circle(screen, (0, 0, 0), (x*10, y*10), 5) #remove *10 when using actual data
+        pygame.draw.circle(screen, (0, 0, 0), (x, y), 5)
 
 #Run the visualisation GUI
 #replace dummy parse when using actual data
-path, graph = dummy_path_generator()
+path, graph = path_generator()
 gui_visualisation(path, graph)
 
 

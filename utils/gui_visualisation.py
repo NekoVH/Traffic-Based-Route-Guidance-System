@@ -51,12 +51,15 @@ def path_generator():
 
     #Change the origin/destinations as needed
     path, _ = astar(graph, graph.origin, graph.destinations)
+    print(path)
 
-    return path, graph
+    coordinates = path_coordinates(path, graph)
+
+    return coordinates, graph
 
 #Renders the graph
 def render_graph(screen, graph, path):
-    #Renders the edges (Gray lines)
+    #Renders the edges (White lines)
     for edge in graph.edges:
         node1, node2 = edge
 
@@ -64,7 +67,7 @@ def render_graph(screen, graph, path):
         x1, y1 = graph.nodes[node1]
         x2, y2 = graph.nodes[node2]
 
-        pygame.draw.line(screen, (125, 125, 125), (x1, y1), (x2, y2), 2)
+        pygame.draw.line(screen, (255, 255, 255), (x1, y1), (x2, y2), 2)
         
     #Renders the path (Red lines)
     if len(path) > 1:

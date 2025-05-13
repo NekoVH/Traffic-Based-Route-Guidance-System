@@ -1,7 +1,6 @@
 import pandas as pd
 
 from dataclasses import dataclass
-from xlrd import sheet
 
 @dataclass
 class Graph:
@@ -42,7 +41,7 @@ def scale_coordinates(coords, width=800, height=600, padding=20):
         y = padding + (max_lat - lat) / (max_lat - min_lat) * (height - 2 * padding)
         return int(x), int(y)
 
-    # Return a list of (site, (x, y)) tuples
+    # Return a dict of (site, (x, y)) tuples
     return {site: scale(lat, lon) for site, (lat, lon) in coords.items()}
 
 def generate_graph(scats_data, scats_sites):
@@ -53,10 +52,10 @@ def generate_graph(scats_data, scats_sites):
     #print_list(coordinates, "Nodes with Coordinates")
 
     scaled_coordinates = scale_coordinates(coordinates)
-    #print_list(scaled_coordinates, "Nodes with Coordinates")
+    print_dict(scaled_coordinates, "Nodes with Coordinates")
 
-    edges = generate_edges(nodes, scaled_coordinates, scats_sites)
-    print_list(edges, "Edges")
+    edges = generate_edges(nodes, scats_sites)
+    #print_dict(edges, "Edges")
 
     adj_list = generate_adj_list(nodes, edges)
     #print_dict(adj_list, "Adjacency List")
@@ -76,7 +75,7 @@ def generate_nodes(scats_data):
 
     return nodes
 
-def generate_edges(nodes, coordinates, scats_sites):
+def generate_edges(nodes, scats_sites):
     #Reads the SCATS Site Listing sheet for the list of location descriptions
     df = pd.read_excel(scats_sites, sheet_name="SCATS Site Numbers", header=0, skiprows=9)
     df = df.drop_duplicates(subset='Site Number', keep='first')
@@ -86,7 +85,7 @@ def generate_edges(nodes, coordinates, scats_sites):
 
     #Stores the location descriptions and SCATS number for all sites in nodes
     matching_sites = []
-    edges = []
+    edges = {}
 
     for _, row in df.iterrows():
         if row['Site Number'] in nodes:
@@ -105,12 +104,10 @@ def generate_edges(nodes, coordinates, scats_sites):
                 if set(locations) & set(site_locations):
                     
                     #Sorts the edge connection from smaller value to larger
-                    edge = ((min(site_number, row['Site Number']), max(site_number, row['Site Number'])))
-                    edges.append((edge, 0))
+                    edge = (str(min(site_number, row['Site Number'])), str(max(site_number, row['Site Number'])))
+                    edges[edge] = 0
 
             matching_sites.append((row['Site Number'], locations))
-
-    edges.sort(key=lambda x: (x[0], x[1]))
 
     return edges
 
@@ -152,7 +149,7 @@ def generate_coordinates(nodes, scats_data):
 
 def generate_adj_list(nodes, edges):
     adj_list = {str(node): {} for node in nodes}
-    for (site1, site2), weight in edges:
+    for (site1, site2), weight in edges.items():
         site1 = str(site1)
         site2 = str(site2)
         adj_list[site1][site2] = weight

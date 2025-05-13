@@ -48,6 +48,6 @@ model = GRU().to(device)
 loss_func = nn.MSELoss()
 optimiser = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
-opt = Optimization(model=model, loss_fn=loss_func, optimizer=optimiser, rescaler=flow_rescaler, device=device)
+opt = Optimization(model=model, loss_fn=loss_func, epochs=n_epochs, optimizer=optimiser, rescaler=flow_rescaler, device=device)
 opt.train(train_dl, val_loader=val_dl, n_epochs=n_epochs, n_features=input_dim, file="gru.pth")
 opt.plot_losses()

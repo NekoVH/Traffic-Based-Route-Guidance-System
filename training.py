@@ -8,11 +8,12 @@ from utils.data_processing import *
 
 
 class Optimization:
-    def __init__(self, model, loss_fn, optimizer, rescaler, device='cpu',
+    def __init__(self, model, loss_fn, epochs, optimizer, rescaler, device='cpu',
                  early_exit_patience=20, lr_scheduler_patience=10, lr_factor=0.5):
         self.model = model
         self.loss_fn = loss_fn
         self.optimizer = optimizer
+        self.epochs = epochs
         self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer, mode="min", patience=lr_scheduler_patience, factor=lr_factor
         )
@@ -94,12 +95,12 @@ class Optimization:
         }
         return metrics
 
-    def train(self, train_loader, val_loader, batch_size=64, n_epochs=50, n_features=1, file=None):        
+    def train(self, train_loader, val_loader, batch_size=64, n_features=1, file=None):
         best_val_loss = float('inf')
         best_weights = copy.deepcopy(self.model.state_dict())
         no_improvement_count = 0
         
-        for epoch in range(1, n_epochs + 1):
+        for epoch in range(1, self.epochs+ 1):
             # Training phase
             self.model.train()
             train_batch_losses = []
@@ -172,7 +173,7 @@ class Optimization:
                 no_improvement_count += 1
 
             if (epoch <= 10) | (epoch % 50 == 0):
-                print(f"[{epoch}/{n_epochs}]")
+                print(f"[{epoch}/{self.epochs}]")
                 print(f"Training - MSE: {train_metrics['mse']:.4f}, MAE: {train_metrics['mae']:.4f}, SMAPE: {train_metrics['smape']:.4f}, R2: {train_metrics['r2']:.4f}, Explained Variance: {train_metrics['explained_variance']:.4f}")
                 print(f"Validation - MSE: {val_metrics['mse']:.4f}, MAE: {val_metrics['mae']:.4f}, SMAPE: {val_metrics['smape']:.4f}, R2: {val_metrics['r2']:.4f}, Explained Variance: {val_metrics['explained_variance']:.4f}")
             
@@ -245,7 +246,7 @@ class Optimization:
             plt.title(f"{metric.upper()}")
             plt.legend()
             plt.grid(True)
-        
+        plt.suptitle("Trained vs Validated Results. Epoch: {0}, Model: {1}".format(self.epochs, self.model.__class__.__name__))
         plt.tight_layout()
         plt.show()
         plt.close()

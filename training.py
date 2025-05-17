@@ -202,7 +202,7 @@ class Optimization:
         
         with torch.no_grad():
             for x_test, y_test in test_loader:
-                x_test = x_test.view([batch_size, -1, n_features]).to(self.device)
+                x_test = x_test.view([x_test.shape[0], -1, n_features]).to(self.device)
                 y_test = y_test.to(self.device)
                 
                 yhat = self.model(x_test)
@@ -213,8 +213,8 @@ class Optimization:
                 loss = self.loss_fn(y_test.unsqueeze(1), yhat)
                 test_losses.append(self.rescaler(loss.item()))
                 
-                predictions.append(yhat.cpu().numpy())
-                values.append(y_test.cpu().numpy())
+                predictions.append(yhat.cpu().numpy().ravel())
+                values.append(y_test.cpu().numpy().ravel())
 
         predictions = np.concatenate(predictions)
         values = np.concatenate(values)
@@ -246,7 +246,7 @@ class Optimization:
             plt.title(f"{metric.upper()}")
             plt.legend()
             plt.grid(True)
-        plt.suptitle("Trained vs Validated Results. Epoch: {0}, Model: {1}".format(self.epochs, self.model.__class__.__name__))
+        plt.suptitle(f"Trained vs Validated Results. Epochs: {self.epochs}, Model: {self.model.__class__.__name__}")
         plt.tight_layout()
         plt.show()
         plt.close()

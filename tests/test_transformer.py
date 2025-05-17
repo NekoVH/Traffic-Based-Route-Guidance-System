@@ -2,6 +2,9 @@
 from torch import optim, nn
 from torch.utils.data import TensorDataset, DataLoader
 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from training import Optimization
 from transformer import Transformer
 from utils.data_processing import process_data, read_excel
@@ -43,7 +46,7 @@ opt = Optimization(
     device=device,
 )
 
-opt.train(train_dataloader, validation_dataloader, n_epochs=n_epochs, n_features=input_dim)
+opt.train(train_dataloader, validation_dataloader, n_features=input_dim)
 opt.plot_losses()
 
 opt.evaluate(test_dataloader, n_features=input_dim)

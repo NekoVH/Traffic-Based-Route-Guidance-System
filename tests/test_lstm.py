@@ -1,10 +1,12 @@
+import torch.optim as optim
+from torch.utils.data import DataLoader, TensorDataset
 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from lstm import *
 from utils.data_processing import *
 from training import *
-
-import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset
 
 from hyperparams import *
 

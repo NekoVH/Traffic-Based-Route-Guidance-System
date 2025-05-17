@@ -1,11 +1,14 @@
 import torch
 import torch.nn as nn
 from torch.utils.data import TensorDataset, DataLoader
-from utils.data_processing import read_excel, process_data
-from gru import GRU
-from training import Optimization
 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from hyperparams import *
+from gru import GRU
+from utils.data_processing import read_excel, process_data
+from training import Optimization
 
 # Reference: https://pytorch.org/tutorials/beginner/basics/optimization_tutorial.html
 
@@ -40,5 +43,5 @@ loss_func = nn.MSELoss()
 optimiser = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
 opt = Optimization(model=model, loss_fn=loss_func, epochs=n_epochs, optimizer=optimiser, rescaler=flow_rescaler, device=device)
-opt.train(train_dl, val_loader=val_dl, n_epochs=n_epochs, n_features=input_dim, file="gru.pth")
+opt.train(train_dl, val_loader=val_dl, n_features=input_dim, file="gru.pth")
 opt.plot_losses()

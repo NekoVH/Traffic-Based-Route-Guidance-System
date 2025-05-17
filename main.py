@@ -56,6 +56,7 @@ match args.model:
     case _:
         exit("No such model")
 
+model.to(device)
 loss_fn = torch.nn.MSELoss(reduction='mean')
 optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
@@ -68,7 +69,7 @@ opt = Optimization(
     device=device,
 )
 
-opt.train(train_dataloader, validation_dataloader, n_features=input_dim)
+opt.train(train_dataloader, validation_dataloader, n_features=input_dim, file=f"{args.model}.pth")
 opt.plot_losses()
 
 opt.evaluate(test_dataloader, n_features=input_dim)

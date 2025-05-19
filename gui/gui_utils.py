@@ -13,7 +13,7 @@ def haversine(lat1, lon1, lat2, lon2):
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
     distance = R * c
 
-    return distance
+    return round(distance, 4) # The result is in kilometers
 
 def reconstruct_path(node: str, prev: list):
     """Given a node, backtrack through the prev list to see the path taken"""

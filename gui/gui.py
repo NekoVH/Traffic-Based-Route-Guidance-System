@@ -172,27 +172,48 @@ class SCATPathFinder:
                                   to_pos[0], to_pos[1], 
                                   fill='black', width=2)
             
-            # Draw arrow for one-way connections
-            if connection.from_direction != Direction.UNKNOWN and connection.to_direction != Direction.UNKNOWN:
+            # Draw arrow only for one-way connections
+            if (connection.from_direction != Direction.UNKNOWN and 
+                connection.to_direction == Direction.UNKNOWN):
                 self.draw_arrow(from_pos, to_pos)
+            elif (connection.from_direction == Direction.UNKNOWN and 
+                  connection.to_direction != Direction.UNKNOWN):
+                self.draw_arrow(to_pos, from_pos)
             
             # Draw distance if enabled
             if self.show_distances.get():
                 mid_x = (from_pos[0] + to_pos[0]) / 2
                 mid_y = (from_pos[1] + to_pos[1]) / 2
+                # Create a white background for the text
+                self.canvas.create_oval(mid_x-25, mid_y-10, mid_x+25, mid_y+10, 
+                                      fill='white', outline='white')
                 self.canvas.create_text(mid_x, mid_y, 
                                       text=f"{connection.distance:.1f}km",
-                                      fill='black')
+                                      fill='black',
+                                      font=('Arial', 10, 'bold'))
         
         # Draw nodes
         for scat_num, pos in self.node_positions.items():
             color = 'red' if self.is_node_in_selected_path(scat_num) else 'black'
-            self.canvas.create_oval(pos[0]-5, pos[1]-5, pos[0]+5, pos[1]+5, 
+            self.canvas.create_oval(pos[0]-7.5, pos[1]-7.5, pos[0]+7.5, pos[1]+7.5, 
                                   fill=color)
-            self.canvas.create_text(pos[0]+10, pos[1]-10, 
-                                  text=scat_num, 
-                                  fill='black')
-    
+            match scat_num:
+                case "2825" | "427" | "3001" | "4262" | "4321" | "4335" | "4821" | "3662":
+                    self.canvas.create_text(pos[0]-15, pos[1]-15, 
+                                        text=scat_num, 
+                                        fill='black',
+                                        font=('Arial', 10, 'bold'))
+                case "3812":
+                    self.canvas.create_text(pos[0]-10, pos[1]+10, 
+                                        text=scat_num, 
+                                        fill='black',
+                                        font=('Arial', 10, 'bold'))
+                case _:
+                    self.canvas.create_text(pos[0]+25, pos[1]-10, 
+                                        text=scat_num, 
+                                        fill='black',
+                                        font=('Arial', 10, 'bold'))
+            
     def draw_arrow(self, start: Tuple[float, float], end: Tuple[float, float]):
         """Draw an arrow between two points"""
         angle = math.atan2(end[1] - start[1], end[0] - start[0])
@@ -200,7 +221,7 @@ class SCATPathFinder:
         mid_y = (start[1] + end[1]) / 2
         
         # Calculate arrow points
-        arrow_size = 10
+        arrow_size = 12
         arrow_x = mid_x - arrow_size * math.cos(angle - math.pi/6)
         arrow_y = mid_y - arrow_size * math.sin(angle - math.pi/6)
         arrow_x2 = mid_x - arrow_size * math.cos(angle + math.pi/6)

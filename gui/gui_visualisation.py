@@ -2,14 +2,14 @@ import pygame
 from astar import astar
 from graph_generator import generate_graph
 #parse_graph and path_coordinates are currently for testing dummy data. May not be in final version
-from gui.gui_utils import parse_graph, path_coordinates
+from gui_utils import parse_graph, path_coordinates
 
 def gui_visualisation(path, graph):
     pygame.init()
 
     #Set up the display window
     #Adjust the screen size when map is available/used
-    screen_width, screen_height = 800, 600
+    screen_width, screen_height = 1200, 800
     screen = pygame.display.set_mode((screen_width, screen_height))
     pygame.display.set_caption("Path Visualiser")
 

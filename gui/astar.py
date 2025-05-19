@@ -1,5 +1,5 @@
 ﻿#Other than imports, this is identical to 2A's iteration
-from gui.gui_utils import Graph, pythagoras, reconstruct_path
+from gui_utils import Graph, pythagoras, reconstruct_path
 import heapq
 from itertools import count
 

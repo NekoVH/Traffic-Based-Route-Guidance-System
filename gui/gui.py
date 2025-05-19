@@ -215,7 +215,7 @@ class SCATPathFinder:
             self.canvas.create_oval(pos[0]-7.5, pos[1]-7.5, pos[0]+7.5, pos[1]+7.5, 
                                   fill=color)
             match scat_num:
-                case "2825" | "427" | "3001" | "4262" | "4321" | "4335" | "4821" | "3662":
+                case "2825" | "3001" | "4262" | "4321" | "4335" | "4821" | "3662":
                     self.canvas.create_text(pos[0]-15, pos[1]-15, 
                                         text=scat_num, 
                                         fill='black',

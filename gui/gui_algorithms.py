@@ -54,7 +54,12 @@ def yen_k_shortest_paths(graph: Graph, source: str, destination: str, k: int) ->
     # Initialize the list of k-shortest paths
     k_paths = [(shortest_path, shortest_dist)]
     candidates = []
-    
+    seen_paths = {tuple(shortest_path)}  # Use a set for O(1) lookup
+
+    def is_path_equivalent(path1: List[str], path2: List[str]) -> bool:
+        """Check if two paths are equivalent (same nodes in any order)"""
+        return set(path1) == set(path2)
+
     for k_idx in range(1, k):
         # Get the previous k-1 shortest path
         prev_path, prev_dist = k_paths[-1]
@@ -100,10 +105,16 @@ def yen_k_shortest_paths(graph: Graph, source: str, destination: str, k: int) ->
                 if not valid_path:
                     continue
                 
-                # Add to candidates if it's not already in k_paths
-                candidate = (total_path, total_dist)
-                if candidate not in k_paths and candidate not in [c[1] for c in candidates]:
+                # Check if this path is equivalent to any existing path
+                is_duplicate = False
+                for existing_path, _ in k_paths:
+                    if is_path_equivalent(total_path, existing_path):
+                        is_duplicate = True
+                        break
+                
+                if not is_duplicate and tuple(total_path) not in seen_paths:
                     heapq.heappush(candidates, (total_dist, total_path))
+                    seen_paths.add(tuple(total_path))
         
         # If no more candidates, we're done
         if not candidates:

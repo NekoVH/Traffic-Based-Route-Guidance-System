@@ -44,12 +44,12 @@ class SCATPathFinder:
         self.draw_graph()
         
         # Make the window resizable
-        self.root.geometry("1200x800")
-        self.root.minsize(800, 600)
+        self.root.geometry("1440x900")
+        self.root.minsize(1440, 900)
     
     def setup_graph(self):
         # Create canvas for graph with a minimum size
-        self.canvas = tk.Canvas(self.graph_frame, bg='white', width=800, height=600)
+        self.canvas = tk.Canvas(self.graph_frame, bg='white', width=1000, height=800)
         self.canvas.pack(fill=tk.BOTH, expand=True)
         
         # Bind resize event
@@ -99,10 +99,13 @@ class SCATPathFinder:
         self.results_frame = ttk.LabelFrame(self.control_frame, text="Results", padding=10)
         self.results_frame.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
         
-        # Create a canvas with scrollbar for results
+        # Create a canvas with scrollbars for results
         self.results_canvas = tk.Canvas(self.results_frame)
-        scrollbar = ttk.Scrollbar(self.results_frame, orient="vertical", 
-                                 command=self.results_canvas.yview)
+        y_scrollbar = ttk.Scrollbar(self.results_frame, orient="vertical", 
+                                  command=self.results_canvas.yview)
+        x_scrollbar = ttk.Scrollbar(self.results_frame, orient="horizontal", 
+                                  command=self.results_canvas.xview)
+        
         self.scrollable_frame = ttk.Frame(self.results_canvas)
         
         self.scrollable_frame.bind(
@@ -113,10 +116,13 @@ class SCATPathFinder:
         )
         
         self.results_canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
-        self.results_canvas.configure(yscrollcommand=scrollbar.set)
+        self.results_canvas.configure(yscrollcommand=y_scrollbar.set,
+                                    xscrollcommand=x_scrollbar.set)
         
+        # Pack scrollbars and canvas
+        y_scrollbar.pack(side="right", fill="y")
+        x_scrollbar.pack(side="bottom", fill="x")
         self.results_canvas.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
     
     def calculate_node_positions(self) -> Dict[str, Tuple[float, float]]:
         """Calculate screen positions for nodes based on their lat/long"""
@@ -137,9 +143,9 @@ class SCATPathFinder:
         
         # Use minimum size if canvas hasn't been drawn yet
         if canvas_width <= 1:
-            canvas_width = 800
+            canvas_width = 1000
         if canvas_height <= 1:
-            canvas_height = 600
+            canvas_height = 800
         
         # Add padding to keep nodes away from edges
         padding = 50
@@ -167,18 +173,29 @@ class SCATPathFinder:
             from_pos = self.node_positions[connection.from_scat]
             to_pos = self.node_positions[connection.to_scat]
             
+            # Check if this edge is in the selected path
+            is_in_path = False
+            if self.paths and self.selected_path_index < len(self.paths):
+                path = self.paths[self.selected_path_index][0]
+                for i in range(len(path) - 1):
+                    if (path[i] == connection.from_scat and path[i + 1] == connection.to_scat) or \
+                       (path[i] == connection.to_scat and path[i + 1] == connection.from_scat):
+                        is_in_path = True
+                        break
+            
             # Draw the line
+            color = 'red' if is_in_path else 'black'
             self.canvas.create_line(from_pos[0], from_pos[1], 
                                   to_pos[0], to_pos[1], 
-                                  fill='black', width=2)
+                                  fill=color, width=2)
             
             # Draw arrow only for one-way connections
             if (connection.from_direction != Direction.UNKNOWN and 
                 connection.to_direction == Direction.UNKNOWN):
-                self.draw_arrow(from_pos, to_pos)
+                self.draw_arrow(from_pos, to_pos, color)
             elif (connection.from_direction == Direction.UNKNOWN and 
                   connection.to_direction != Direction.UNKNOWN):
-                self.draw_arrow(to_pos, from_pos)
+                self.draw_arrow(to_pos, from_pos, color)
             
             # Draw distance if enabled
             if self.show_distances.get():
@@ -213,8 +230,8 @@ class SCATPathFinder:
                                         text=scat_num, 
                                         fill='black',
                                         font=('Arial', 10, 'bold'))
-            
-    def draw_arrow(self, start: Tuple[float, float], end: Tuple[float, float]):
+    
+    def draw_arrow(self, start: Tuple[float, float], end: Tuple[float, float], color: str = 'black'):
         """Draw an arrow between two points"""
         angle = math.atan2(end[1] - start[1], end[0] - start[0])
         mid_x = (start[0] + end[0]) / 2
@@ -230,7 +247,7 @@ class SCATPathFinder:
         self.canvas.create_polygon(mid_x, mid_y, 
                                  arrow_x, arrow_y, 
                                  arrow_x2, arrow_y2, 
-                                 fill='black')
+                                 fill=color)
     
     def is_node_in_selected_path(self, scat_num: str) -> bool:
         """Check if a node is in the currently selected path"""
@@ -244,11 +261,11 @@ class SCATPathFinder:
         
         # Validate input
         if not source or not dest:
-            tk.messagebox.showerror("Error", "Please enter both source and destination SCATs")
+            messagebox.showerror("Error", "Please enter both source and destination SCATs")
             return
         
         if source not in self.graph.nodes or dest not in self.graph.nodes:
-            tk.messagebox.showerror("Error", "Invalid SCAT number(s)")
+            messagebox.showerror("Error", "Invalid SCAT number(s)")
             return
         
         # Calculate paths
@@ -258,6 +275,10 @@ class SCATPathFinder:
             # Fastest path calculation (We will add this later)
             pass
         
+        if not self.paths:
+            messagebox.showinfo("No Path Found", f"No valid path found between SCAT {source} and {dest}")
+            return
+            
         self.update_results()
         self.draw_graph()
     
@@ -266,21 +287,59 @@ class SCATPathFinder:
         for widget in self.scrollable_frame.winfo_children():
             widget.destroy()
         
+        # Configure styles for result boxes
+        style = ttk.Style()
+        style.configure('Result.TFrame', background='white')
+        style.configure('ResultHover.TFrame', background='#f0f0f0')
+        style.configure('Result.TLabel', background='white')
+        style.configure('ResultHover.TLabel', background='#f0f0f0')
+        
         # Add new results
         for i, (path, dist) in enumerate(self.paths):
-            frame = ttk.Frame(self.scrollable_frame)
-            frame.pack(fill=tk.X, pady=5)
+            frame = ttk.Frame(self.scrollable_frame, style='Result.TFrame')
+            frame.pack(fill=tk.X, pady=5, padx=5)
             
-            # Make the frame clickable
-            frame.bind('<Button-1>', lambda e, idx=i: self.select_path(idx))
+            # Add border and padding
+            frame.configure(relief="solid", borderwidth=1)
+            
+            # Create a container for the content
+            content_frame = ttk.Frame(frame, style='Result.TFrame')
+            content_frame.pack(fill=tk.X, padx=10, pady=5)
             
             # Path information - show full path
-            path_text = " -> ".join(path)
-            ttk.Label(frame, text=f"Path {i+1}: {path_text}").pack(anchor=tk.W)
+            path_text = " → ".join(path)
+            path_label = ttk.Label(content_frame, 
+                                 text=f"Path {i+1}: {path_text}",
+                                 style='Result.TLabel',
+                                 wraplength=500)
+            path_label.pack(anchor=tk.W, pady=5)
             
-            # Distance/Time
+            # Distance/Time depends on the mode
             dist_text = f"Distance: {dist:.2f}km" if self.mode.get() == "shortest" else f"Time: {dist:.2f}min"
-            ttk.Label(frame, text=dist_text).pack(anchor=tk.W)
+            dist_label = ttk.Label(content_frame, 
+                                 text=dist_text,
+                                 style='Result.TLabel')
+            dist_label.pack(anchor=tk.W, pady=(0, 5))
+            
+            # Make everything clickable
+            for widget in [frame, content_frame, path_label, dist_label]:
+                widget.bind('<Button-1>', lambda e, idx=i: self.select_path(idx))
+                widget.bind('<Enter>', lambda e, f=frame, l1=path_label, l2=dist_label: 
+                          self.on_hover_enter(f, l1, l2))
+                widget.bind('<Leave>', lambda e, f=frame, l1=path_label, l2=dist_label: 
+                          self.on_hover_leave(f, l1, l2))
+    
+    def on_hover_enter(self, frame, label1, label2):
+        """Handle mouse enter event"""
+        frame.configure(style='ResultHover.TFrame')
+        label1.configure(style='ResultHover.TLabel')
+        label2.configure(style='ResultHover.TLabel')
+    
+    def on_hover_leave(self, frame, label1, label2):
+        """Handle mouse leave event"""
+        frame.configure(style='Result.TFrame')
+        label1.configure(style='Result.TLabel')
+        label2.configure(style='Result.TLabel')
     
     def select_path(self, index: int):
         self.selected_path_index = index

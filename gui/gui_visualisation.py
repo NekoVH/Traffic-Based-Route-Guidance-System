@@ -2,7 +2,7 @@ import pygame
 from astar import astar
 from graph_generator import generate_graph
 #parse_graph and path_coordinates are currently for testing dummy data. May not be in final version
-from astar_utils import parse_graph, path_coordinates
+from gui.gui_utils import parse_graph, path_coordinates
 
 def gui_visualisation(path, graph):
     pygame.init()

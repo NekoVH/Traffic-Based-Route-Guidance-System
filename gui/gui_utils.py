@@ -18,8 +18,8 @@ def haversine(lat1, lon1, lat2, lon2):
 def reconstruct_path(node: str, prev: list):
     """Given a node, backtrack through the prev list to see the path taken"""
     path = []
-    while node in prev:
-        path.append(node)
-        node = prev[node]
-    
+    iter = node
+    while iter is not None:
+        path.append(iter)
+        iter = prev[iter]
     return list(reversed(path))

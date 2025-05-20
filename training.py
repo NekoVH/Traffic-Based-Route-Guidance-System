@@ -198,7 +198,6 @@ class Optimization:
         self.model.eval()
         predictions = []
         values = []
-        test_losses = []
         
         with torch.no_grad():
             for x_test, y_test in test_loader:

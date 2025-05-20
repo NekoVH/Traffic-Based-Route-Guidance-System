@@ -7,6 +7,8 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 
+PROCESSED_FILE_PATH = "datasets/processed_scats_data_october_2006.parquet"
+
 @dataclass
 class Dataset:
     X_train: np.ndarray
@@ -32,7 +34,7 @@ def rescaler(x_min: float, x_max: float):
     return _rescaler
 
 def process_data(df: pd.DataFrame, lags: int = 7):
-    processed_file = "datasets/processed_scats_data_october_2006.parquet"
+    processed_file = PROCESSED_FILE_PATH
     
     if os.path.exists(processed_file):
         # Load the processed data

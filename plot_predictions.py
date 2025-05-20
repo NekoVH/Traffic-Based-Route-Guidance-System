@@ -12,7 +12,7 @@ import os
 def parse_args():
     argc = len(argv)
     if argc != 2:
-        print("Usage: python3 test_model_pred.py <model choice>")
+        print("Usage: python3 plot_predictions.py <model choice>")
         print("Models currently supported:")
         print("\tlstm - Long Short-Term Memory")
         print("\tgru - Gated Recurrent Unit")

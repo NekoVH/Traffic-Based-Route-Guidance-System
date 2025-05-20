@@ -4,6 +4,7 @@ import math
 from gui_algorithms import yen_k_shortest_paths
 from gui_graph import Graph, build_graph, Direction
 from typing import List, Tuple, Dict
+from datetime import datetime, timedelta
 
 class SCATPathFinder:
     def __init__(self, root):
@@ -18,6 +19,8 @@ class SCATPathFinder:
         self.dest_scat = tk.StringVar()
         self.show_distances = tk.BooleanVar(value=False)
         self.mode = tk.StringVar(value="shortest")
+        self.selected_time = tk.StringVar()
+        self.selected_model = tk.StringVar(value="LSTM")
         self.paths = []
         self.selected_path_index = 0
         
@@ -78,9 +81,42 @@ class SCATPathFinder:
         mode_frame.pack(fill=tk.X, padx=5, pady=5)
         
         ttk.Radiobutton(mode_frame, text="Shortest Path", 
-                       variable=self.mode, value="shortest").pack(anchor=tk.W)
+                       variable=self.mode, value="shortest",
+                       command=self.on_mode_change).pack(anchor=tk.W)
         ttk.Radiobutton(mode_frame, text="Fastest Path", 
-                       variable=self.mode, value="fastest").pack(anchor=tk.W)
+                       variable=self.mode, value="fastest",
+                       command=self.on_mode_change).pack(anchor=tk.W)
+        
+        # Time selection (initially hidden)
+        self.time_frame = ttk.LabelFrame(self.control_frame, text="Time Selection", padding=10)
+        self.time_frame.pack(fill=tk.X, padx=5, pady=5)
+        
+        # Create time options (every 15 minutes)
+        time_options = []
+        current_time = datetime.strptime("00:00", "%H:%M")
+        end_time = datetime.strptime("23:45", "%H:%M")
+        while current_time <= end_time:
+            time_options.append(current_time.strftime("%H:%M"))
+            current_time += timedelta(minutes=15)
+        
+        self.time_combo = ttk.Combobox(self.time_frame, textvariable=self.selected_time, 
+                                     values=time_options, state="readonly")
+        self.time_combo.set(time_options[0])  # Set default to 00:00
+        self.time_combo.pack(fill=tk.X, pady=(0, 5))
+        
+        # AI Model selection (initially hidden)
+        self.model_frame = ttk.LabelFrame(self.control_frame, text="AI Model", padding=10)
+        self.model_frame.pack(fill=tk.X, padx=5, pady=5)
+        
+        model_options = ["LSTM", "GRU", "Transformer"]
+        self.model_combo = ttk.Combobox(self.model_frame, textvariable=self.selected_model,
+                                      values=model_options, state="readonly")
+        self.model_combo.set(model_options[0])  # Set default to LSTM
+        self.model_combo.pack(fill=tk.X, pady=(0, 5))
+        
+        # Initially hide time and model selection
+        self.time_frame.pack_forget()
+        self.model_frame.pack_forget()
         
         # Options
         options_frame = ttk.LabelFrame(self.control_frame, text="Options", padding=10)
@@ -93,6 +129,15 @@ class SCATPathFinder:
         # Calculate button
         ttk.Button(self.control_frame, text="Calculate Paths", 
                   command=self.calculate_paths).pack(pady=10)
+    
+    def on_mode_change(self):
+        """Handle mode change between shortest and fastest path"""
+        if self.mode.get() == "fastest":
+            self.time_frame.pack(fill=tk.X, padx=5, pady=5)
+            self.model_frame.pack(fill=tk.X, padx=5, pady=5)
+        else:
+            self.time_frame.pack_forget()
+            self.model_frame.pack_forget()
     
     def setup_results(self):
         # Results frame
@@ -268,12 +313,22 @@ class SCATPathFinder:
             messagebox.showerror("Error", "Invalid SCAT number(s)")
             return
         
+        # Additional validation for fastest path mode
+        if self.mode.get() == "fastest":
+            if not self.selected_time.get():
+                messagebox.showerror("Error", "Please select a time")
+                return
+            if not self.selected_model.get():
+                messagebox.showerror("Error", "Please select an AI model")
+                return
+        
         # Calculate paths
         if self.mode.get() == "shortest":
             self.paths = yen_k_shortest_paths(self.graph, source, dest, 5)
         else:
-            # Fastest path calculation (We will add this later)
-            pass
+            # TODO: Implement fastest path calculation using AI models
+            messagebox.showinfo("Coming Soon", "Fastest path calculation using AI models will be implemented soon!")
+            return
         
         if not self.paths:
             messagebox.showinfo("No Path Found", f"No valid path found between SCAT {source} and {dest}")

@@ -38,7 +38,7 @@ def dijkstra(graph: Graph, source: str, destination: str, blocked_edges: Set[Tup
                 prev[neighbor] = current_node
                 heapq.heappush(pq, (alt, neighbor))
     
-    return [], float('inf')
+    return [], 0
 
 def yen_k_shortest_paths(graph: Graph, source: str, destination: str, k: int) -> List[Tuple[List[str], float]]:
     '''

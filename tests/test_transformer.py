@@ -1,30 +1,15 @@
-import torch
+﻿import torch
 from torch import optim, nn
 from torch.utils.data import TensorDataset, DataLoader
 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from training import Optimization
 from transformer import Transformer
-from gru import GRU
-from lstm import LSTM
 from utils.data_processing import process_data, read_excel
 
 from hyperparams import *
-
-import argparse
-
-parser = argparse.ArgumentParser(
-    prog="tbrgs",
-    description="Traffic-based Route Guidance System",
-    usage="%(prog)s [options]"
-)
-
-parser.add_argument('-e', '--epochs', help="Number of training epochs. Default = 1000", default=1000)
-parser.add_argument('-m', '--model', help="Select neural network model. Either 'lstm', 'gru', or 'transformer'")
-
-args = parser.parse_args()
-if args.model is None:
-    parser.print_help()
-    exit()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 flow_dataset, flow_rescaler = process_data(read_excel("datasets/Scats Data October 2006.xls", sheet_name="Data", header=1))
@@ -46,17 +31,9 @@ train_dataloader = DataLoader(training_data, batch_size=batch_size, shuffle=Fals
 validation_dataloader = DataLoader(validation_data, batch_size=batch_size, shuffle=False, drop_last=True)
 test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False, drop_last=True)
 
-match args.model:
-    case 'lstm':
-        model = LSTM()
-    case 'gru':
-        model = GRU()
-    case 'transformer':
-        model = Transformer()
-    case _:
-        exit("No such model")
+# Initialize model with memory optimizations
+model = Transformer().to(device)
 
-model.to(device)
 loss_fn = torch.nn.MSELoss(reduction='mean')
 optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
@@ -64,12 +41,13 @@ opt = Optimization(
     model=model,
     optimizer=optimizer,
     loss_fn=loss_fn,
-    epochs=int(args.epochs),
+    epochs=n_epochs,
     rescaler=flow_rescaler,
     device=device,
 )
 
-opt.train(train_dataloader, validation_dataloader, n_features=input_dim, file=f"{args.model}.pth")
+opt.train(train_dataloader, validation_dataloader, n_features=input_dim)
 opt.plot_losses()
 
 opt.evaluate(test_dataloader, n_features=input_dim)
+

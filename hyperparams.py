@@ -1,0 +1,8 @@
+input_dim = 7
+output_dim = 1
+hidden_dim = 64
+layer_dim = 1
+batch_size = 64
+dropout = 0.2
+learning_rate = 1e-3
+weight_decay =1e-6

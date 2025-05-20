@@ -40,6 +40,6 @@ model = LSTM().to(device)
 loss_fn = nn.MSELoss(reduction="mean")
 optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
-opt = Optimization(model=model, loss_fn=loss_fn, epochs=n_epochs, optimizer=optimizer, rescaler=flow_rescaler, device=device)
+opt = Optimization(model=model, loss_fn=loss_fn, epochs=10, optimizer=optimizer, rescaler=flow_rescaler, device=device)
 opt.train(train_dataloader, val_loader=validation_dataloader, n_features=input_dim)
 opt.plot_losses()

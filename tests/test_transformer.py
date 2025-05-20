@@ -41,7 +41,7 @@ opt = Optimization(
     model=model,
     optimizer=optimizer,
     loss_fn=loss_fn,
-    epochs=n_epochs,
+    epochs=10,
     rescaler=flow_rescaler,
     device=device,
 )

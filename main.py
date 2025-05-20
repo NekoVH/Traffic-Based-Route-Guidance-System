@@ -11,6 +11,7 @@ from utils.data_processing import process_data, read_excel
 from hyperparams import *
 
 import argparse
+from datetime import datetime
 
 parser = argparse.ArgumentParser(
     prog="tbrgs",
@@ -69,7 +70,8 @@ opt = Optimization(
     device=device,
 )
 
-opt.train(train_dataloader, validation_dataloader, n_features=input_dim, file=f"{args.model}.pth")
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+opt.train(train_dataloader, validation_dataloader, n_features=input_dim, file=f"{args.model}_{timestamp}.pth")
 opt.plot_losses()
 
 opt.evaluate(test_dataloader, n_features=input_dim)

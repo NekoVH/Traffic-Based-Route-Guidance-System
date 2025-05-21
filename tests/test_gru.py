@@ -14,7 +14,7 @@ from training import Optimization
 
 # Determine device and init dataset
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-flow_dataset, flow_rescaler = process_data(read_excel(
+flow_dataset, flow_rescaler, _ = process_data(read_excel(
     filename="datasets/Scats Data October 2006.xls",
     sheet_name="Data",
     header=1

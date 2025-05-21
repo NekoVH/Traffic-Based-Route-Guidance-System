@@ -34,7 +34,8 @@ def rescaler(x_min: float, x_max: float):
         return x * (x_max - x_min) + x_min
     return _rescaler
 
-def process_data(df: pd.DataFrame, lags: int = 7):
+def process_data(df: pd.DataFrame = read_excel("datasets/Scats Data October 2006.xls", sheet_name="Data", header=1),
+                 lags: int = 7):
     processed_file = PROCESSED_FILE_PATH
     
     if os.path.exists(processed_file):
@@ -49,6 +50,7 @@ def process_data(df: pd.DataFrame, lags: int = 7):
         # Get the flow min and max for rescaling
         flow_min = processed_data['flow_min'].iloc[0]
         flow_max = processed_data['flow_max'].iloc[0]
+        flow_scaler = scaler(flow_min, flow_max)
         flow_rescaler = rescaler(flow_min, flow_max)
         
     else:
@@ -142,10 +144,10 @@ def process_data(df: pd.DataFrame, lags: int = 7):
         X_flow_test, y_test
     )
 
-    return flow_dataset, flow_rescaler
+    return flow_dataset, flow_rescaler, flow_scaler
     # return X_latlong_train, X_flow_train, y_train, X_latlong_test, X_flow_test, y_test, flow_scaler, flow_rescaler, lat_scaler, long_scaler
 
-def get_avg_data(df: pd.DataFrame):
+def get_avg_data(df: pd.DataFrame = read_excel("datasets/Scats Data October 2006.xls", sheet_name="Data", header=1)):
     """Returns all the averaged flows for each time interval per latlong"""
     avg_flow_file = AVG_FLOW_FILE_PATH
 
@@ -159,7 +161,7 @@ def get_avg_data(df: pd.DataFrame):
         time_labels = [t.strftime("%H:%M") for t in times]
         vxx_to_time = dict(zip(flow_columns, time_labels))  # Mappings
         
-        avg_flows = df.groupby(['NB_LATITUDE', 'NB_LONGITUDE'])[flow_columns].mean()
+        avg_flows = df.groupby(['NB_LATITUDE', 'NB_LONGITUDE'])[flow_columns].mean().reset_index()
 
         # rename columns
         avg_flows = avg_flows.rename(columns=vxx_to_time)
@@ -168,4 +170,4 @@ def get_avg_data(df: pd.DataFrame):
 
     return avg_flows
 
-# print(get_avg_data(read_excel("datasets/Scats Data October 2006.xls", sheet_name="Data", header=1)))
+# print(get_avg_data())

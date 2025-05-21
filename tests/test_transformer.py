@@ -12,7 +12,7 @@ from utils.data_processing import process_data, read_excel
 from hyperparams import *
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-flow_dataset, flow_rescaler = process_data(read_excel("datasets/Scats Data October 2006.xls", sheet_name="Data", header=1))
+flow_dataset, flow_rescaler, _ = process_data(read_excel("datasets/Scats Data October 2006.xls", sheet_name="Data", header=1))
 
 X_train = torch.tensor(flow_dataset.X_train, dtype=torch.float32)
 X_val = torch.tensor(flow_dataset.X_val, dtype=torch.float32)

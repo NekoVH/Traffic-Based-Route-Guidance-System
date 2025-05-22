@@ -3,6 +3,7 @@ from gui_utils import reconstruct_path
 import heapq
 from copy import deepcopy
 from typing import List, Tuple, Set
+from gui_utils import SpeedPredictor
 
 def dijkstra(graph: Graph, source: str, destination: str, blocked_edges: Set[Tuple[str, str]] = None) -> Tuple[List[str], float]:
     '''
@@ -126,13 +127,161 @@ def yen_k_shortest_paths(graph: Graph, source: str, destination: str, k: int) ->
     
     return k_paths
 
+def dijkstra_fastest(graph: Graph, source: str, destination: str, speed_predictor: SpeedPredictor, time: str, blocked_edges: Set[Tuple[str, str]] = None) -> Tuple[List[str], float]:
+    '''
+    Modified Dijkstra's algorithm that finds the fastest path based on predicted speeds.
+    Uses SpeedPredictor to get speed predictions for each edge.
+    Returns (path, total_time_in_hours)
+    '''
+    if blocked_edges is None:
+        blocked_edges = set()
+        
+    time_dist = {node: float('inf') for node in graph.nodes}
+    prev = {node: None for node in graph.nodes}
+    time_dist[source] = 0
+    visited = set()
+    pq = [(0, source)]
+
+    while pq:
+        current_time, current_node = heapq.heappop(pq)
+        if current_node in visited:
+            continue
+        visited.add(current_node)
+        if current_node == destination:
+            return reconstruct_path(current_node, prev), current_time
+        
+        for neighbor, connection in graph.adj_lists.get(current_node, []):
+            if neighbor in visited:
+                continue
+            if (current_node, neighbor) in blocked_edges:
+                continue
+            
+            way = graph.nodes[current_node].ways[connection.from_direction]
+            # Get speed prediction for this edge
+            try:
+                speed = speed_predictor.get_speed(way.lat, way.long, time)
+            except ValueError:
+                # If no speed prediction available, use a default speed of 30 km/h
+                speed = 30
+                
+            # Calculate time in hours (distance in km / speed in km/h)
+            edge_time = connection.distance / speed if speed > 0 else float('inf')
+            alt = current_time + edge_time
+            
+            if alt < time_dist[neighbor]:
+                time_dist[neighbor] = alt
+                prev[neighbor] = current_node
+                heapq.heappush(pq, (alt, neighbor))
+    
+    return [], 0
+
+def yen_k_fastest_paths(graph: Graph, source: str, destination: str, k: int, speed_predictor: SpeedPredictor, time: str) -> List[Tuple[List[str], float]]:
+    '''
+    Yen's algorithm to find k-fastest paths between source and destination SCATs based on predicted speeds.
+    Returns a list of tuples, each containing (path, time_in_hours).
+    '''
+    # Find the fastest path
+    fastest_path, fastest_time = dijkstra_fastest(graph, source, destination, speed_predictor, time)
+    
+    if not fastest_path or fastest_path[-1] != destination:
+        return []
+    
+    # Initialize the list of k-fastest paths
+    k_paths = [(fastest_path, fastest_time)]
+    candidates = []
+    seen_paths = {tuple(fastest_path)}  # Use a set for O(1) lookup
+
+    def is_path_equivalent(path1: List[str], path2: List[str]) -> bool:
+        """Check if two paths are equivalent (same nodes in any order)"""
+        return set(path1) == set(path2)
+
+    for k_idx in range(1, k):
+        # Get the previous k-1 fastest path
+        prev_path, prev_time = k_paths[-1]
+        
+        # For each node in the previous path (except the destination)
+        for i in range(len(prev_path) - 1):
+            # Create a set of edges to block
+            blocked_edges = set()
+            
+            # Block all edges from the root path up to the current node
+            for j in range(i):
+                blocked_edges.add((prev_path[j], prev_path[j + 1]))
+            
+            # Block the edge we're currently considering
+            blocked_edges.add((prev_path[i], prev_path[i + 1]))
+            
+            # Find the fastest path avoiding the blocked edges
+            spur_path, spur_time = dijkstra_fastest(graph, prev_path[i], destination, speed_predictor, time, blocked_edges)
+            
+            if spur_path and spur_path[-1] == destination:
+                # Combine the root path and spur path
+                root_path = prev_path[:i]
+                total_path = root_path + spur_path
+                
+                # Check for loops in the path
+                if len(total_path) != len(set(total_path)):
+                    continue
+                
+                # Calculate total time
+                total_time = 0
+                valid_path = True
+                for j in range(len(total_path) - 1):
+                    found_connection = False
+                    for neighbor, connection in graph.adj_lists[total_path[j]]:
+                        if neighbor == total_path[j + 1]:
+                            
+                            way = graph.nodes[total_path[j]].ways[connection.from_direction]
+                            try:
+                                speed = speed_predictor.get_speed(way.lat, way.long, time)
+                            except ValueError:
+                                speed = 30
+                            total_time += connection.distance / speed if speed > 0 else float('inf')
+                            found_connection = True
+                            break
+                    if not found_connection:
+                        valid_path = False
+                        break
+                
+                if not valid_path:
+                    continue
+                
+                # Check if this path is equivalent to any existing path
+                is_duplicate = False
+                for existing_path, _ in k_paths:
+                    if is_path_equivalent(total_path, existing_path):
+                        is_duplicate = True
+                        break
+                
+                if not is_duplicate and tuple(total_path) not in seen_paths:
+                    heapq.heappush(candidates, (total_time, total_path))
+                    seen_paths.add(tuple(total_path))
+        
+        # If no more candidates, we're done
+        if not candidates:
+            break
+            
+        # Get the next fastest path from candidates
+        next_time, next_path = heapq.heappop(candidates)
+        k_paths.append((next_path, next_time))
+    
+    return k_paths
+
 if __name__ == "__main__":
-    graph = build_graph("../datasets/Scats Data October 2006.xls")
+    graph = build_graph("datasets/Scats Data October 2006.xls")
     
-    # Find 5 shortest paths between SCAT 3685 and 2200
+    # Example usage of both distance-based and time-based path finding
+    # Distance-based paths
     k_paths = yen_k_shortest_paths(graph, "3685", "2200", 5)
-    
-    print("Top 5 shortest paths:")
+    print("\nTop 5 shortest paths by distance:")
     for i, (path, dist) in enumerate(k_paths, 1):
         print(f"\nPath {i} (Distance: {dist:.2f} km):")
+        print(" -> ".join(path))
+    
+    # Time-based paths
+    speed_predictor = SpeedPredictor(model_choice="lstm")
+    k_fastest_paths = yen_k_fastest_paths(graph, "3685", "2200", 5, speed_predictor, "08:00")
+    print("\nTop 5 fastest paths by time:")
+    for i, (path, time) in enumerate(k_fastest_paths, 1):
+        print(f"\nPath {i} (Time: {time:.2f} hours):")
         print(" -> ".join(path))

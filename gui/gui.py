@@ -1,8 +1,9 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import math
-from gui_algorithms import yen_k_shortest_paths
+from gui_algorithms import yen_k_shortest_paths, yen_k_fastest_paths
 from gui_graph import Graph, build_graph, Direction
+from gui_utils import SpeedPredictor
 from typing import List, Tuple, Dict
 from datetime import datetime, timedelta
 
@@ -12,7 +13,7 @@ class SCATPathFinder:
         self.root.title("SCAT Path Finder")
         
         # Load and initialize graph
-        self.graph = build_graph("../datasets/Scats Data October 2006.xls")
+        self.graph = build_graph("datasets/Scats Data October 2006.xls")
         
         # GUI state
         self.source_scat = tk.StringVar()
@@ -23,6 +24,7 @@ class SCATPathFinder:
         self.selected_model = tk.StringVar(value="LSTM")
         self.paths = []
         self.selected_path_index = 0
+        self.speed_predictor = None
         
         self.setup_ui()
         
@@ -304,13 +306,12 @@ class SCATPathFinder:
         source = self.source_scat.get()
         dest = self.dest_scat.get()
         
-        # Validate input
         if not source or not dest:
             messagebox.showerror("Error", "Please enter both source and destination SCATs")
             return
         
         if source not in self.graph.nodes or dest not in self.graph.nodes:
-            messagebox.showerror("Error", "Invalid SCAT number(s)")
+            messagebox.showerror("Error", "Invalid SCAT numbers")
             return
         
         # Additional validation for fastest path mode
@@ -326,9 +327,10 @@ class SCATPathFinder:
         if self.mode.get() == "shortest":
             self.paths = yen_k_shortest_paths(self.graph, source, dest, 5)
         else:
-            # TODO: Implement fastest path calculation using AI models
-            messagebox.showinfo("Coming Soon", "Fastest path calculation using AI models will be implemented soon!")
-            return
+            if not self.speed_predictor:
+                self.speed_predictor = SpeedPredictor(model_choice=self.selected_model.get().lower())
+            self.paths = yen_k_fastest_paths(self.graph, source, dest, 5, 
+                                               self.speed_predictor, self.selected_time.get())
         
         if not self.paths:
             messagebox.showinfo("No Path Found", f"No valid path found between SCAT {source} and {dest}")
@@ -350,7 +352,7 @@ class SCATPathFinder:
         style.configure('ResultHover.TLabel', background='#f0f0f0')
         
         # Add new results
-        for i, (path, dist) in enumerate(self.paths):
+        for i, (path, path_val) in enumerate(self.paths):
             frame = ttk.Frame(self.scrollable_frame, style='Result.TFrame')
             frame.pack(fill=tk.X, pady=5, padx=5)
             
@@ -370,7 +372,7 @@ class SCATPathFinder:
             path_label.pack(anchor=tk.W, pady=5)
             
             # Distance/Time depends on the mode
-            dist_text = f"Distance: {dist:.2f}km" if self.mode.get() == "shortest" else f"Time: {dist:.2f}min"
+            dist_text = f"Distance: {path_val:.2f}km" if self.mode.get() == "shortest" else f"Time: {(path_val * 60):.2f} minutes"
             dist_label = ttk.Label(content_frame, 
                                  text=dist_text,
                                  style='Result.TLabel')

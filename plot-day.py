@@ -56,12 +56,14 @@ def predict_24_hours(model, site_data, scaler, device="cpu"):
     raw_values = site_data[time_cols].values.flatten().astype(float)
 
     scaled_vals = scaler(raw_values)
+    scaled_vals_ext = np.concatenate([scaled_vals[-7:], scaled_vals])   # Prepend last 7 values for lag window at start
+    
     predictions = []
 
     model.eval()
     with torch.no_grad():
-        for i in range(len(scaled_vals) - 7):
-            inputs = scaled_vals[i:i + 7]   # Get previous 7 lags
+        for i in range(len(scaled_vals)):
+            inputs = scaled_vals_ext[i:i + 7]   # Get previous 7 lags
             input_tensor = torch.tensor(
                 inputs,
                 dtype=torch.float32,
@@ -127,7 +129,7 @@ def plot_flows(
 ):
     plt.figure(figsize=(14, 7))
     plt.plot(actual[:num_points], label="Actual Flow", linewidth=2)
-    plt.plot(range(7, 7 + len(predictions[:num_points - 7])), predictions[:num_points - 7], label="Predicted Flow", linestyle="--")
+    plt.plot(range(num_points), predictions[:num_points], label="Predicted Flow", linestyle="--")
     
     plt.xticks(ticks=range(num_points), labels=time_labels, rotation=60)
     plt.xlabel("Time")
@@ -148,7 +150,7 @@ def plot_speeds(
 ):
     plt.figure(figsize=(14, 7))
     plt.plot(actual[:num_points], label="Actual Speed", linewidth=2)
-    plt.plot(range(7, 7 + len(predictions[:num_points - 7])), predictions[:num_points - 7], label="Predicted Speed", linestyle="--")
+    plt.plot(range(num_points), predictions[:num_points], label="Predicted Speed", linestyle="--")
     
     plt.xticks(ticks=range(num_points), labels=time_labels, rotation=60)
     plt.xlabel("Time")

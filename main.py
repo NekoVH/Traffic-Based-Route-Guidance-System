@@ -11,6 +11,7 @@ from utils.data_processing import process_data, read_excel
 from hyperparams import *
 
 import argparse
+from datetime import datetime
 
 parser = argparse.ArgumentParser(
     prog="tbrgs",
@@ -27,7 +28,7 @@ if args.model is None:
     exit()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-flow_dataset, flow_rescaler = process_data(read_excel("datasets/Scats Data October 2006.xls", sheet_name="Data", header=1))
+flow_dataset, flow_rescaler, _ = process_data(read_excel("datasets/Scats Data October 2006.xls", sheet_name="Data", header=1))
 
 X_train = torch.tensor(flow_dataset.X_train, dtype=torch.float32)
 X_val = torch.tensor(flow_dataset.X_val, dtype=torch.float32)
@@ -69,7 +70,8 @@ opt = Optimization(
     device=device,
 )
 
-opt.train(train_dataloader, validation_dataloader, n_features=input_dim, file=f"{args.model}.pth")
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+opt.train(train_dataloader, validation_dataloader, n_features=input_dim, file=f"{args.model}_{timestamp}.pth")
 opt.plot_losses()
 
 opt.evaluate(test_dataloader, n_features=input_dim)

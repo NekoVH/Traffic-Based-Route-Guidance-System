@@ -180,5 +180,3 @@ cython_debug/
 lightning_logs/
 
 *.kate-swp
-models/*.pth
-

@@ -12,7 +12,7 @@ from hyperparams import *
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-flow_dataset, flow_rescaler = process_data(read_excel("datasets/Scats Data October 2006.xls", sheet_name="Data", header=1))
+flow_dataset, flow_rescaler, _ = process_data(read_excel("datasets/Scats Data October 2006.xls", sheet_name="Data", header=1))
 
 X_train = torch.tensor(flow_dataset.X_train, dtype=torch.float32)
 X_val = torch.tensor(flow_dataset.X_val, dtype=torch.float32)
@@ -40,6 +40,6 @@ model = LSTM().to(device)
 loss_fn = nn.MSELoss(reduction="mean")
 optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
-opt = Optimization(model=model, loss_fn=loss_fn, epochs=n_epochs, optimizer=optimizer, rescaler=flow_rescaler, device=device)
-opt.train(train_dataloader, val_loader=validation_dataloader, n_features=input_dim, file="lstm.pth")
+opt = Optimization(model=model, loss_fn=loss_fn, epochs=10, optimizer=optimizer, rescaler=flow_rescaler, device=device)
+opt.train(train_dataloader, val_loader=validation_dataloader, n_features=input_dim)
 opt.plot_losses()

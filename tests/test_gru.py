@@ -14,7 +14,7 @@ from training import Optimization
 
 # Determine device and init dataset
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-flow_dataset, flow_rescaler = process_data(read_excel(
+flow_dataset, flow_rescaler, _ = process_data(read_excel(
     filename="datasets/Scats Data October 2006.xls",
     sheet_name="Data",
     header=1
@@ -42,6 +42,6 @@ model = GRU().to(device)
 loss_func = nn.MSELoss()
 optimiser = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
-opt = Optimization(model=model, loss_fn=loss_func, epochs=n_epochs, optimizer=optimiser, rescaler=flow_rescaler, device=device)
-opt.train(train_dl, val_loader=val_dl, n_features=input_dim, file="gru.pth")
+opt = Optimization(model=model, loss_fn=loss_func, epochs=10, optimizer=optimiser, rescaler=flow_rescaler, device=device)
+opt.train(train_dl, val_loader=val_dl, n_features=input_dim)
 opt.plot_losses()

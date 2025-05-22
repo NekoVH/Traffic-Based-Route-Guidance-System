@@ -28,7 +28,7 @@ def load_data(model, batch_size=64, device="cpu"):
         filename="datasets/Scats Data October 2006.xls",
         sheet_name="Data", header=1
     )
-    flow_dataset, flow_rescaler = process_data(df)
+    flow_dataset, flow_rescaler, _ = process_data(df)
 
     X_test = torch.tensor(flow_dataset.X_test, dtype=torch.float32)
     y_test = torch.tensor(flow_dataset.y_test, dtype=torch.float32)

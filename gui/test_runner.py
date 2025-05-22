@@ -4,7 +4,7 @@ from typing import List, Dict
 import json
 
 def load_test_cases() -> List[Dict]:
-    with open("algorithm_tests/tests.json", "r") as f:
+    with open("gui/algorithm_tests/tests.json", "r") as f:
         return json.load(f)
 
 def run_tests(graph: Graph, test_suite: List[Dict]) -> Dict[str, int]:
@@ -93,7 +93,7 @@ def print_test_results(results: Dict[str, int]):
 
 def main():
     # Build the graph
-    graph = build_graph("../datasets/Scats Data October 2006.xls")
+    graph = build_graph("datasets/Scats Data October 2006.xls")
     
     # Get test cases
     test_cases = load_test_cases()

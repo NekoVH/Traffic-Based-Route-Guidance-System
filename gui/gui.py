@@ -327,7 +327,9 @@ class SCATPathFinder:
         if self.mode.get() == "shortest":
             self.paths = yen_k_shortest_paths(self.graph, source, dest, 5)
         else:
-            if not self.speed_predictor:
+            if self.speed_predictor:
+                self.speed_predictor.set_model(model_choice=self.selected_model.get().lower())
+            else:
                 self.speed_predictor = SpeedPredictor(model_choice=self.selected_model.get().lower())
             self.paths = yen_k_fastest_paths(self.graph, source, dest, 5, 
                                                self.speed_predictor, self.selected_time.get())

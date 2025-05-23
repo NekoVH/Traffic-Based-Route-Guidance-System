@@ -172,7 +172,7 @@ class Optimization:
             else:
                 no_improvement_count += 1
 
-            if (epoch <= 10) | (epoch % 50 == 0):
+            if (epoch <= 10) or (epoch % 50 == 0):
                 print(f"[{epoch}/{self.epochs}]")
                 print(f"Training - MSE: {train_metrics['mse']:.4f}, MAE: {train_metrics['mae']:.4f}, SMAPE: {train_metrics['smape']:.4f}, R2: {train_metrics['r2']:.4f}, Explained Variance: {train_metrics['explained_variance']:.4f}")
                 print(f"Validation - MSE: {val_metrics['mse']:.4f}, MAE: {val_metrics['mae']:.4f}, SMAPE: {val_metrics['smape']:.4f}, R2: {val_metrics['r2']:.4f}, Explained Variance: {val_metrics['explained_variance']:.4f}")
@@ -207,10 +207,6 @@ class Optimization:
                 yhat = self.model(x_test)
                 if yhat.shape != y_test.unsqueeze(1).shape:
                     yhat = yhat.view_as(y_test.unsqueeze(1))
-                
-                # Calculate test loss
-                loss = self.loss_fn(y_test.unsqueeze(1), yhat)
-                test_losses.append(self.rescaler(loss.item()))
                 
                 predictions.append(yhat.cpu().numpy().ravel())
                 values.append(y_test.cpu().numpy().ravel())

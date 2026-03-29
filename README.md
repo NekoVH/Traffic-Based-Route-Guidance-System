@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project is part of COS30019 - Introduction to AI, Assignment 2 Part B. It focuses on implementing a Machine Learning-powered Traffic-Based Route Guidance System (TBRGS) that predicts traffic flow and integrates the prediction into an optimal route guidance tool for the City of Boroondara in Melbourne, Australia.
+This project implements a Machine Learning-powered Traffic-Based Route Guidance System (TBRGS) that predicts traffic flow and integrates the prediction into an optimal route guidance tool for the City of Boroondara in Melbourne, Australia.
 
 The system uses deep learning models (LSTM and GRU) and one additional model of our choice (currently 2016 traditional transformer) to predict traffic conditions. The results are used to estimate travel time between intersections and recommend up to five optimal routes between a user-defined origin and destination.
 
